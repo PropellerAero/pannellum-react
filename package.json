@@ -2,7 +2,7 @@
   "name": "pannellum-react",
   "version": "1.2.3",
   "description": "Pannellum React Component",
-  "main": "lib/index.js",
+  "main": "umd/index.js",
   "module": "es/index.js",
   "files": [
     "css",
