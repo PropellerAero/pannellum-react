@@ -1737,7 +1737,7 @@ window.pannellum = (function (window, document, undefined) {
         }
 
         if (config.onRender) {
-          config.onRender();
+          config.onRender(config);
         }
       }
     }
@@ -3134,6 +3134,9 @@ window.pannellum = (function (window, document, undefined) {
     };
 
     this.pitchYawToCanvasCoords = function (pitch, yaw) {
+      if (!renderer) {
+        return null;
+      }
       var hsPitchSin = Math.sin((pitch * Math.PI) / 180),
         hsPitchCos = Math.cos((pitch * Math.PI) / 180),
         configPitchSin = Math.sin((config.pitch * Math.PI) / 180),
@@ -3176,6 +3179,32 @@ window.pannellum = (function (window, document, undefined) {
 
         return { x: coord[0], y: coord[1] };
       }
+    };
+
+    this.canvasCoordinatesToPitchYaw = function (pos) {
+      if (!renderer) {
+        return null;
+      }
+      var canvas = renderer.getCanvas();
+      var canvasWidth = canvas.clientWidth,
+        canvasHeight = canvas.clientHeight;
+      console.log({ pos, canvasWidth, canvasHeight });
+      var x = (pos.x / canvasWidth) * 2 - 1;
+      var y = ((1 - (pos.y / canvasHeight) * 2) * canvasHeight) / canvasWidth;
+      var focal = 1 / Math.tan((config.hfov * Math.PI) / 360);
+      var s = Math.sin((config.pitch * Math.PI) / 180);
+      var c = Math.cos((config.pitch * Math.PI) / 180);
+      var a = focal * c - y * s;
+      var root = Math.sqrt(x * x + a * a);
+      var pitch = (Math.atan((y * c + focal * s) / root) * 180) / Math.PI;
+      var yaw = (Math.atan2(x / root, a / root) * 180) / Math.PI + config.yaw;
+      if (yaw < -180) {
+        yaw += 360;
+      }
+      if (yaw > 180) {
+        yaw -= 360;
+      }
+      return { pitch, yaw };
     };
 
     /**
