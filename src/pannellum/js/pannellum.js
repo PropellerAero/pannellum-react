@@ -1879,7 +1879,7 @@ window.pannellum = (function (window, document, undefined) {
                 }
 
                 if (config.onRender) {
-                    config.onRender();
+                    config.onRender(config);
                 }
             }
         }
@@ -3320,6 +3320,83 @@ window.pannellum = (function (window, document, undefined) {
          */
         this.mouseEventToCoords = function (event) {
             return mouseEventToCoords(event);
+        };
+
+        this.pitchYawToCanvasCoords = function (pitch, yaw) {
+            if (!renderer) {
+                return null;
+            }
+            var hsPitchSin = Math.sin((pitch * Math.PI) / 180),
+                hsPitchCos = Math.cos((pitch * Math.PI) / 180),
+                configPitchSin = Math.sin((config.pitch * Math.PI) / 180),
+                configPitchCos = Math.cos((config.pitch * Math.PI) / 180),
+                yawCos = Math.cos(((-yaw + config.yaw) * Math.PI) / 180);
+            var z =
+                hsPitchSin * configPitchSin +
+                hsPitchCos * yawCos * configPitchCos;
+            if (
+                (yaw <= 90 && yaw > -90 && z <= 0) ||
+                ((yaw > 90 || yaw <= -90) && z <= 0)
+            ) {
+                return null;
+            } else {
+                var yawSin = Math.sin(((-yaw + config.yaw) * Math.PI) / 180),
+                    hfovTan = Math.tan((config.hfov * Math.PI) / 360);
+                // div.style.visibility = "visible";
+                // Subpixel rendering doesn't work in Firefox
+                // https://bugzilla.mozilla.org/show_bug.cgi?id=739176
+                var canvas = renderer.getCanvas(),
+                    canvasWidth = canvas.clientWidth,
+                    canvasHeight = canvas.clientHeight;
+                var coord = [
+                    ((-canvasWidth / hfovTan) * yawSin * hsPitchCos) / z / 2,
+                    ((-canvasWidth / hfovTan) *
+                        (hsPitchSin * configPitchCos -
+                            hsPitchCos * yawCos * configPitchSin)) /
+                        z /
+                        2,
+                ];
+                // Apply roll
+                var rollSin = Math.sin((config.roll * Math.PI) / 180),
+                    rollCos = Math.cos((config.roll * Math.PI) / 180);
+                coord = [
+                    coord[0] * rollCos - coord[1] * rollSin,
+                    coord[0] * rollSin + coord[1] * rollCos,
+                ];
+                // Apply transform
+                coord[0] += canvasWidth /* - hs.div.offsetWidth*/ / 2;
+                coord[1] += canvasHeight /*- hs.div.offsetHeight*/ / 2;
+
+                return { x: coord[0], y: coord[1] };
+            }
+        };
+
+        this.canvasCoordinatesToPitchYaw = function (pos) {
+            if (!renderer) {
+                return null;
+            }
+            var canvas = renderer.getCanvas();
+            var canvasWidth = canvas.clientWidth,
+                canvasHeight = canvas.clientHeight;
+            console.log({ pos, canvasWidth, canvasHeight });
+            var x = (pos.x / canvasWidth) * 2 - 1;
+            var y =
+                ((1 - (pos.y / canvasHeight) * 2) * canvasHeight) / canvasWidth;
+            var focal = 1 / Math.tan((config.hfov * Math.PI) / 360);
+            var s = Math.sin((config.pitch * Math.PI) / 180);
+            var c = Math.cos((config.pitch * Math.PI) / 180);
+            var a = focal * c - y * s;
+            var root = Math.sqrt(x * x + a * a);
+            var pitch = (Math.atan((y * c + focal * s) / root) * 180) / Math.PI;
+            var yaw =
+                (Math.atan2(x / root, a / root) * 180) / Math.PI + config.yaw;
+            if (yaw < -180) {
+                yaw += 360;
+            }
+            if (yaw > 180) {
+                yaw -= 360;
+            }
+            return { pitch, yaw };
         };
 
         /**
