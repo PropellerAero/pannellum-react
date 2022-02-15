@@ -1,8 +1,9 @@
 builder:
   encrypted_env_file: deployment/encrypted/build_args.sec
   volumes:
-    - ./Build:/build/Build
-    - ./Source:/build/Source
+    - ./lib:/build/lib
+    - ./es:/build/es
+    - ./umd:/build/umd
   build:
     dockerfile: deployment/Dockerfile
     encrypted_dockercfg_path: deployment/encrypted/dockerhub_dockercfg.sec
