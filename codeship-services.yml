@@ -2,7 +2,7 @@ builder:
   encrypted_env_file: deployment/encrypted/build_args.sec
   volumes:
     - .:/build
-    - /app/node_modules
+    - /build/node_modules
   build:
     dockerfile: deployment/Dockerfile
     encrypted_dockercfg_path: deployment/encrypted/dockerhub_dockercfg.sec
