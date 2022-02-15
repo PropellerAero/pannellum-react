@@ -1,7 +1,7 @@
 {
-  "name": "pannellum-react",
-  "version": "1.2.3",
-  "description": "Pannellum React Component",
+  "name": "@propelleraero/pannellum-react",
+  "version": "0.0.3",
+  "description": "Pannellum React Component (Propeller fork)",
   "main": "lib/index.js",
   "module": "es/index.js",
   "files": [
@@ -17,7 +17,9 @@
     "test": "nwb test-react",
     "test:coverage": "nwb test-react --coverage",
     "test:watch": "nwb test-react --server",
-    "deploy": "gh-pages -d demo/dist"
+    "deploy": "gh-pages -d demo/dist",
+    "codeship:decrypt": "./deployment/crypto.sh decrypt ./deployment/encrypted ./deployment/secrets",
+    "codeship:encrypt": "./deployment/crypto.sh encrypt ./deployment/secrets ./deployment/encrypted"
   },
   "dependencies": {
     "video.js": "^7.1.0"
