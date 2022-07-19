@@ -3,7 +3,6 @@ builder:
   volumes:
     - .:/build
     - /build/node_modules
-  encrypted_dockercfg_path: deployment/encrypted/dockerhub_dockercfg.sec
   build:
     dockerfile: deployment/Dockerfile
     encrypted_args_file: deployment/encrypted/build_args.sec
@@ -20,4 +19,3 @@ publisher:
     - .:/code-to-deploy
   cached: true
   encrypted_env_file: deployment/encrypted/deploy_creds_production.sec
-  dockercfg_service: dockercfg-production
